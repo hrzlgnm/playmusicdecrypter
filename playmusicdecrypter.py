@@ -18,7 +18,7 @@
 
 __version__ = "2.0"
 
-import os, sys, struct, re, glob, optparse, time
+import os, sys, struct, re, glob, optparse, time, shutil
 import Crypto.Cipher.AES, Crypto.Util.Counter
 import mutagen
 import sqlite3
@@ -35,8 +35,7 @@ class PlayMusicDecrypter:
 
         # Test if source file is encrypted
         start_bytes = self.source.read(4)
-        if start_bytes != "\x12\xd3\x15\x27":
-            raise ValueError("Invalid file format!")
+        self.is_encrypted = start_bytes == "\x12\xd3\x15\x27"
 
         # Get file info
         self.database = database
@@ -58,14 +57,17 @@ class PlayMusicDecrypter:
 
     def decrypt_all(self, outfile=""):
         """Decrypt all blocks and write them to outfile (or to stdout if outfile in not specified)"""
-        destination = open(outfile, "wb") if outfile else sys.stdout
-        while True:
-            decrypted = self.decrypt()
-            if not decrypted:
-                break
+        if self.is_encrypted:
+            destination = open(outfile, "wb") if outfile else sys.stdout
+            while True:
+                decrypted = self.decrypt()
+                if not decrypted:
+                    break
 
-            destination.write(decrypted)
-            destination.flush()
+                destination.write(decrypted)
+                destination.flush()
+        else:
+            shutil.copy(self.infile, outfile)
 
     def get_info(self):
         """Returns informations about song from database"""
@@ -85,7 +87,7 @@ class PlayMusicDecrypter:
 
     def normalize_filename(self, filename):
         """Remove invalid characters from filename"""
-        return unicode(re.sub(r'[<>:"/\\|?*]', " ", filename))
+        return unicode(re.sub(r'[<>:"/\\|?*]', " ", filename)).strip()
 
     def get_outfile(self):
         """Returns output filename based on song informations"""
