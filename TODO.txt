@@ -1,0 +1,7 @@
+Things to do be able to sync constantly
+- add skip if exists option
+- add keep encrypted file option
+
+Nice to have:
+- embed album / artist art into the mp3s
+- add more existing metadata tags from music.db
