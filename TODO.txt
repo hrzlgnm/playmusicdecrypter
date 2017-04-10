@@ -5,3 +5,5 @@ Things to do be able to sync constantly
 Nice to have:
 - embed album / artist art into the mp3s
 - add more existing metadata tags from music.db
+- duplicate detection
+- better filename normalization
