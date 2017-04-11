@@ -28,22 +28,28 @@ Usage
 
 Help
 ----
+```
+Decrypt MP3 files from Google Play Music offline storage (All Access)
 
-    Usage: playmusicdecrypter [-h] [options] [destination_dir]
-    
-    Decrypt MP3 files from Google Play Music offline storage (All Access)
-    
-    Options:
-      --version             show program's version number and exit
-      -h, --help            show this help message and exit
-      -a ADB, --adb=ADB     path to adb executable
-      -d DATABASE, --database=DATABASE
-                            local path to Google Play Music database file (will be
-                            downloaded from device via adb if not specified)
-      -l LIBRARY, --library=LIBRARY
-                            local path to directory with encrypted MP3 files (will
-                            be downloaded from device via adb if not specified
-      -r REMOTE, --remote=REMOTE
-                            remote path to directory with encrypted MP3 files on
-                            device (default:
-                            /data/data/com.google.android.music/files/music)
+positional arguments:
+  destination_dir       destination directory for decrypted files
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -v, --version         show program's version number and exit
+  -a ADB, --adb ADB     path to adb executable (default: adb)
+  -d DATABASE, --database DATABASE
+                        local path to Google Play Music database file (will be
+                        downloaded from device via adb if not specified)
+                        (default: None)
+  -l LIBRARY, --library LIBRARY
+                        local path to directory with encrypted MP3 files (will
+                        be downloaded from device via adb if not specified
+                        (default: None)
+  -r REMOTE, --remote REMOTE
+                        remote path to directory with encrypted MP3 files on
+                        device (default:
+                        /data/data/com.google.android.music/files/music)
+  -s, --skip-existing   skip existing decrypted files (default: False)
+  -k, --keep-encrypted  keep encrypted files after decryption (default: False)
+```
