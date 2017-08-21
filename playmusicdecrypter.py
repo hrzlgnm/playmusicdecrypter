@@ -198,9 +198,14 @@ def decrypt_files(source_dir="encrypted", destination_dir=".", database="music.d
             if not os.path.isdir(os.path.dirname(outfile)):
                 os.makedirs(os.path.dirname(outfile))
 
+            if os.path.getctime(outfile) < os.path.getctime(f):
+                logger.debug(u'removing previous file {previous}, it is older than {new}'
+                             .format(previous=outfile, new=f))
+                os.remove(outfile)
+
             if os.path.isfile(outfile):
                 if not skip_existing_decrypted:
-                    logger.debug('removing previous file, skip existing is off')
+                    logger.debug(u'removing previous file, skip existing is off')
                     os.remove(outfile)
                 else:
                     remove_if_enabled(f)
