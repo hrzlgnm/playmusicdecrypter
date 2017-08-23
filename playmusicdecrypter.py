@@ -32,8 +32,10 @@ logger = logging.getLogger('main')
 
 def normalize_filename(filename):
     """Remove invalid characters from filename"""
-    return unicode(re.sub(r'[<>:"/\\|?*]', " ", filename)).strip()
-
+    result = unicode(re.sub(r'[<>:"/\\|?*]', " ", filename)).strip()
+    while result.endswith('.'):
+        result = result[:-1]
+    return result
 
 class PlayMusicDecrypter:
     """Decrypt MP3 file from Google Play Music offline storage (All Access)"""
@@ -154,7 +156,7 @@ def pull_library(source_dir="/data/data/com.google.android.music/files/music", d
         sys.exit(1)
 
     if not os.path.isdir(destination_dir):
-        os.makedirs(destination_dir)
+        os.makedirs(destination_dir)gi
 
     files = [f for f in adb.ls(source_dir) if f.endswith(".mp3")]
     if files:
