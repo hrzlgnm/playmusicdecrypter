@@ -156,7 +156,7 @@ def pull_library(source_dir="/data/data/com.google.android.music/files/music", d
         sys.exit(1)
 
     if not os.path.isdir(destination_dir):
-        os.makedirs(destination_dir)gi
+        os.makedirs(destination_dir)
 
     files = [f for f in adb.ls(source_dir) if f.endswith(".mp3")]
     if files:
