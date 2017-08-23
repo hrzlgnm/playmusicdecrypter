@@ -97,9 +97,10 @@ class PlayMusicDecrypter:
 
     def get_outfile(self):
         """Returns output filename based on song informations"""
-        destination_dir = os.path.join(normalize_filename(self.info["AlbumArtist"]),
-                                       normalize_filename(self.info["Album"]))
+        destination_dir = os.path.join(normalize_filename(self.info["AlbumArtist"]).lower(),
+                                       normalize_filename(self.info["Album"]).lower())
         filename = u"{TrackNumber:02d} - {Title}.mp3".format(**self.info)
+        filename = filename.lower()
         return os.path.join(destination_dir, normalize_filename(filename))
 
     def update_id3(self, outfile):
@@ -198,10 +199,7 @@ def decrypt_files(source_dir="encrypted", destination_dir=".", database="music.d
             if not os.path.isdir(os.path.dirname(outfile)):
                 os.makedirs(os.path.dirname(outfile))
 
-            if os.path.getctime(outfile) < os.path.getctime(f):
-                logger.debug(u'removing previous file {previous}, it is older than {new}'
-                             .format(previous=outfile, new=f))
-                os.remove(outfile)
+            remove_if_older(f, outfile)
 
             if os.path.isfile(outfile):
                 if not skip_existing_decrypted:
@@ -220,6 +218,13 @@ def decrypt_files(source_dir="encrypted", destination_dir=".", database="music.d
     else:
         logger.error("No files found! Exiting...")
         sys.exit(1)
+
+
+def remove_if_older(infile, outfile):
+    if os.path.isfile(outfile) and os.path.getctime(outfile) < os.path.getctime(infile):
+        logger.debug(u'removing previous file {previous}, it is older than {new}'
+                     .format(previous=outfile, new=infile))
+        os.remove(outfile)
 
 
 def main():
