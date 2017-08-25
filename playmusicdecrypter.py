@@ -162,8 +162,14 @@ def pull_library(source_dir="/data/data/com.google.android.music/files/music", d
     if files:
         start_time = time.time()
         for i, f in enumerate(files):
-            logger.debug('Downloading file {}/{}...'.format(i + 1, len(files)))
-            adb.pull(os.path.join(source_dir, f), os.path.join(destination_dir, f))
+            source_file = os.path.join(source_dir, f)
+            dest_file = os.path.join(destination_dir, f)
+            if not os.path.isfile(dest_file):
+                logger.debug('Downloading file {}/{}...'.format(i + 1, len(files)))
+                adb.pull(source_file, dest_file)
+            else:
+                logger.debug(u'File {} already exists, skipping'.format(dest_file))
+
         logger.debug('All downloads finished ({:.1f}s)!'.format(time.time() - start_time))
     else:
         logger.error("No files found! Exiting...")
@@ -253,12 +259,12 @@ def main():
 
     # Download Google Play Music database from device via adb
     if not parsed_args.database:
-        parsed_args.database = os.path.join(destination_dir, "music.db")
-        pull_database(destination_dir, adb=parsed_args.adb)
+        parsed_args.database = os.path.join(parsed_args.destination_dir, "music.db")
+        pull_database(parsed_args.destination_dir, adb=parsed_args.adb)
 
     # Download encrypted MP3 files from device via adb
     if not parsed_args.library:
-        parsed_args.library = os.path.join(destination_dir, "encrypted")
+        parsed_args.library = os.path.join(parsed_args.destination_dir, "encrypted")
         pull_library(parsed_args.remote, parsed_args.library, adb=parsed_args.adb)
 
     # Decrypt all MP3 files
