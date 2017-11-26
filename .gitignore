@@ -1,4 +1,4 @@
 *.py[cod]
-sync.sh
+sync*.sh
 *~
 /.idea
