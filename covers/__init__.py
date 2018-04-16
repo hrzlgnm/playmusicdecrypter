@@ -5,6 +5,7 @@ def file_get_contents(filename):
     with open(filename) as f:
         return f.read()
 
+
 def has_cover(path):
     file_list = os.listdir(path)
     return 'cover.jpg' in file_list or 'cover.png' in file_list

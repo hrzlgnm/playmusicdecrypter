@@ -23,6 +23,8 @@ import Crypto.Cipher.AES, Crypto.Util.Counter
 import mutagen
 import covers
 from covers import downloader as downloader
+from db import lists
+from playlist import creator
 import sqlite3
 
 import superadb
@@ -44,7 +46,7 @@ def normalize_filename(filename):
 class PlayMusicDecrypter(object):
     """Decrypt MP3 file from Google Play Music offline storage (All Access)"""
 
-    def __init__(self, database, infile):
+    def __init__(self, db_conn, infile):
         # Open source file
         self.infile = infile
         self.source = open(infile, "rb")
@@ -54,9 +56,7 @@ class PlayMusicDecrypter(object):
         self.is_encrypted = start_bytes == "\x12\xd3\x15\x27"
 
         # Get file info
-        self.database = database
-        self.db = sqlite3.connect(self.database, detect_types=sqlite3.PARSE_DECLTYPES)
-        self.db.row_factory = sqlite3.Row
+        self.db = db_conn
         self.info = self.get_info()
 
     def decrypt(self):
@@ -91,7 +91,7 @@ class PlayMusicDecrypter(object):
         """Returns informations about song from database"""
         cursor = self.db.cursor()
 
-        cursor.execute("""SELECT Title, Album, Artist, AlbumArtist, Composer, Genre, Year, Duration,
+        cursor.execute("""SELECT Id, Title, Album, Artist, AlbumArtist, Composer, Genre, Year, Duration,
                                  TrackCount, TrackNumber, DiscCount, DiscNumber, Compilation, CpData, AlbumArtLocation
                           FROM music
                           WHERE LocalCopyPath = ?""", (os.path.basename(self.infile),))
@@ -181,8 +181,10 @@ def pull_library(source_dir="/data/data/com.google.android.music/files/music", d
 
 
 def decrypt_files(source_dir="encrypted", destination_dir=".", database="music.db", skip_existing_decrypted=False,
-                  keep_encrypted_files=False):
-    """Decrypt all MP3 files in source directory and write them to destination directory"""
+                  keep_encrypted_files=False, write_play_lists=False):
+    """Decrypt all MP3 files in source directory and write them to destination directory
+    :param write_play_lists:
+    """
     logger.info("Decrypting MP3 files...")
     if not os.path.isdir(destination_dir):
         os.makedirs(destination_dir)
@@ -196,11 +198,15 @@ def decrypt_files(source_dir="encrypted", destination_dir=".", database="music.d
         else:
             logger.debug(u'keeping {}'.format(f_))
 
+    con = sqlite3.connect(database, detect_types=sqlite3.PARSE_DECLTYPES)
+    con.row_factory = sqlite3.Row
+    playlists = creator.PlayListCreator(destination_dir)
+
     if files:
         start_time = time.time()
         for f in files:
             try:
-                decrypter = PlayMusicDecrypter(database, f)
+                decrypter = PlayMusicDecrypter(con, f)
                 action = 'Decrypting' if decrypter.is_encrypted else 'Copying'
                 logger.info(u"{} file {} -> {}".format(action, f, decrypter.get_outfile()))
             except ValueError as e:
@@ -209,13 +215,19 @@ def decrypt_files(source_dir="encrypted", destination_dir=".", database="music.d
 
             outfile = os.path.join(destination_dir, decrypter.get_outfile())
             outfile_path = os.path.dirname(outfile)
+            info = decrypter.get_info()
+            playlists.add(lists.get(con, info['Id']),
+                          {'len': info['Duration'] / 1000,
+                           'name': u'{AlbumArtist} - {Title}'.format(**info),
+                           'file_path': decrypter.get_outfile()})
+
             if not os.path.isdir(outfile_path):
                 os.makedirs(outfile_path)
 
             remove_if_older(f, outfile)
 
             if not covers.has_cover(outfile_path):
-                uri = decrypter.get_info()['AlbumArtLocation']
+                uri = info['AlbumArtLocation']
                 if uri:
                     downloader.fetch_cover(uri, outfile_path)
 
@@ -231,6 +243,9 @@ def decrypt_files(source_dir="encrypted", destination_dir=".", database="music.d
             decrypter.get_decrypted_content(outfile)
             decrypter.update_id3(outfile)
             remove_if_enabled(f)
+
+        if write_play_lists:
+            playlists.create_m3u()
 
         logger.info("Decryption finished ({:.1f}s)!".format(time.time() - start_time))
     else:
@@ -264,6 +279,8 @@ def main():
                         help="skip existing decrypted files")
     parser.add_argument("-k", "--keep-encrypted", default=False, action='store_true',
                         help="keep encrypted files after decryption")
+    parser.add_argument("-p", "--write_playlists", default=False, action='store_true',
+                        help="Write Playlists as m3u into destination directory")
     parser.add_argument("destination_dir", default=".", help="destination directory for decrypted files")
 
     parsed_args = parser.parse_args()
@@ -280,7 +297,7 @@ def main():
 
     # Decrypt all MP3 files
     decrypt_files(parsed_args.library, parsed_args.destination_dir, parsed_args.database,
-                  skip_existing_decrypted=parsed_args.skip_existing, keep_encrypted_files=parsed_args.keep_encrypted)
+                  skip_existing_decrypted=parsed_args.skip_existing, keep_encrypted_files=parsed_args.keep_encrypted, write_play_lists=parsed_args.write_playlists)
 
 
 if __name__ == "__main__":
