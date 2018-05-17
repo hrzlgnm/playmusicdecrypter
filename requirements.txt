@@ -2,7 +2,7 @@
 chardet==3.0.4
 idna==2.6
 mutagen==1.40.0
-olefile==0.44
+olefile==0.45.1
 Pillow==4.3.0
 pycrypto==2.6.1
 python-magic==0.4.13
