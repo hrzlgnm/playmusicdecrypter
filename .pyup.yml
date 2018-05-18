@@ -33,10 +33,6 @@ assignees:
 # default: pyup-
 branch_prefix: pyup/
 
-# set a global prefix for PRs
-# default: empty
-pr_prefix: "Bug #12345"
-
 # allow to close stale PRs
 # default: True
 close_prs: True
