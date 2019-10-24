@@ -3,7 +3,7 @@ chardet==3.0.4
 idna==2.8
 mutagen==1.42.0
 olefile==0.46
-Pillow==6.2.0
+Pillow==6.2.1
 pycrypto==2.6.1 # pyup: ignore
 python-magic==0.4.15
 requests==2.22.0
