@@ -6,6 +6,6 @@ olefile==0.46
 Pillow==7.1.2
 pycrypto==2.6.1 # pyup: ignore
 python-magic==0.4.18
-requests==2.23.0
+requests==2.24.0
 urllib3==1.25.9
 webp-converter==4.0.1
