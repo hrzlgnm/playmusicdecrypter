@@ -1,6 +1,6 @@
 ﻿certifi==2017.11.5
 chardet==3.0.4
-idna==2.9
+idna==2.10
 mutagen==1.44.0
 olefile==0.46
 Pillow==7.1.2
