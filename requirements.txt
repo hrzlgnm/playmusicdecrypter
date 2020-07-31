@@ -1,7 +1,7 @@
 ﻿certifi==2017.11.5
 chardet==3.0.4
 idna==2.10
-mutagen==1.45.0
+mutagen==1.45.1
 olefile==0.46
 Pillow==7.2.0
 pycrypto==2.6.1 # pyup: ignore
